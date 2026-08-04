@@ -3,7 +3,7 @@ import { Navigate, Route, Routes } from 'react-router-dom'
 import { AuthLayout, GuestLayout } from './pages/Layout'
 import AuthPage from './pages/AuthPage'
 import HomePage from './pages/HomePage'
-import BuilderPage from './pages/HomePage'
+import BuilderPage from './pages/BuilderPage'
 import PreviewPage from './pages/PreviewPage'
 
 function App() {

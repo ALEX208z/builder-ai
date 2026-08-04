@@ -25,7 +25,7 @@ export function AppContextProvider({children}) {
 
     useEffect(() => {
       checkSession()
-    }, [checkSession])
+    }, [])
 
     return (
         <AppContext.Provider value={{user, loadingUser}}>
