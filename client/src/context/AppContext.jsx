@@ -1,4 +1,5 @@
 import { createContext, useContext } from "react";
+import { useState } from "react";
 
 
 const AppContext = createContext(undefined);
@@ -8,9 +9,9 @@ export function AppContextProvider({children}) {
     // Auth States
     const [user, setUser] = useState(null)
     const [loadingUser, setLoadingUser] = useState(true);
-    
+
     return (
-        <AppContext.Provider value={{}}>
+        <AppContext.Provider value={{user, loadingUser}}>
             {children}
         </AppContext.Provider>
     )
