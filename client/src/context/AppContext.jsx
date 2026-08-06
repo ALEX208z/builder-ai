@@ -1,11 +1,14 @@
-import { createContext, useContext, useEffect } from "react";
-import { useState } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 import api from "../api/api.js"
+import toast from "react-hot-toast"
+import { Navigate, useNavigate } from "react-router-dom";
 
 
 const AppContext = createContext(undefined);
 
 export function AppContextProvider({children}) {
+
+    const navigate = useNavigate();
 
     // Auth States
     const [user, setUser] = useState(null)
@@ -25,7 +28,22 @@ export function AppContextProvider({children}) {
 
     useEffect(() => {
       checkSession()
-    }, [])
+    }, [checkSession])
+
+    const login = async() => {
+        try {
+            const {data} = await api.post("/api/auth/login", {email, password});
+            setUser(data.user)
+            toast.success("Welcome back!")
+            navigate("/")
+
+        } catch (err) {
+            console.log("Login failed :", err);
+            const errMsg = err?.response?.data?.error || "Invalid email or password";
+            toast.error(errMsg);
+            throw new Error(errMsg);
+        }
+    }
 
     return (
         <AppContext.Provider value={{user, loadingUser}}>
