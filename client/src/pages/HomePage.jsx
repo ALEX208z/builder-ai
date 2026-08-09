@@ -42,7 +42,14 @@ const HomePage = () => {
           </p>
 
           {/* Prompt input with glassmorphic variant */}
-          
+          <div className="w-full mt-6">
+              <PromptInput 
+              onSubmit={() => {}} 
+              loading={false}
+              placeholder="Create a portfolio website..."
+              variant="glass"
+              autoFocus/>
+          </div>
         </div>
       </div>
     </div>
