@@ -3,7 +3,9 @@ import { useAppContext } from "../context/AppContext";
 import PromptInput from "../components/PromptInput";
 
 const HomePage = () => {
-  const { user } = useAppContext();
+
+  const { user, projects, loadingProjects, generatingProject, loadProject, handleGenerate, handleDelete, logout } = useAppContext();
+
   return (
     <div className="h-screen overflow-y-scroll text-white font-sans bg-[url('/bg-img.png')] bg-cover bg-center bg-no-repeat">
       {/* Nav */}
@@ -16,7 +18,7 @@ const HomePage = () => {
         </div>
         <div className="flex items-center gap-4 text-sm font-medium text-zinc-300">
           <span>{user?.name}</span>
-          <button className="py-1.5 px-3 border border-white/20 text-white hover:bg-white/10 text-xs rounded-md cursor-pointer bg-transparent">
+          <button onClick={logout} className="py-1.5 px-3 border border-white/20 text-white hover:bg-white/10 text-xs rounded-md cursor-pointer bg-transparent">
             Sign out
           </button>
         </div>
@@ -38,14 +40,14 @@ const HomePage = () => {
           </h1>
           <p className="text-center text-sm md:text-base max-w-xl mt-4 text-white/65 leading-relaxed">
             Describe your idea and watch AI design, structure and launch your
-            websit instantly. No coding required
+            website instantly. No coding required
           </p>
 
           {/* Prompt input with glassmorphic variant */}
           <div className="w-full mt-6">
               <PromptInput 
-              onSubmit={() => {}} 
-              loading={false}
+              onSubmit={handleGenerate} 
+              loading={generatingProject}
               placeholder="Create a portfolio website..."
               variant="glass"
               autoFocus/>
