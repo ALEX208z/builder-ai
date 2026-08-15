@@ -21,7 +21,7 @@ export function AppContextProvider({ children }) {
   // States
   const [projects, setProjects] = useState([]);
   const [loadingProjects, setLoadingProjects] = useState(true);
-  const [activeProjects, setActiveProjects] = useState(null);
+  const [activeProject, setActiveProject] = useState(null);
   const [loadingActiveProject, setLoadingActiveProject] = useState(true);
   const [chatLoading, setChatLoading] = useState(false);
   const [generatingProject, setGeneratingProject] = useState(false);
@@ -57,6 +57,7 @@ export function AppContextProvider({ children }) {
       throw new Error(errMsg);
     }
   };
+
   const register = async (name, email, password) => {
     try {
       const { data } = await api.post("/api/auth/register", {
@@ -68,7 +69,7 @@ export function AppContextProvider({ children }) {
       toast.success("Account created successfully");
       navigate("/");
     } catch (err) {
-      console.log("Registration", err);
+      console.log("Registration failed:", err);
       const errMsg = err?.response?.data?.error || "Registration failed";
       toast.error(errMsg);
       throw new Error(errMsg);
@@ -81,7 +82,7 @@ export function AppContextProvider({ children }) {
       setUser(null);
       setProjects([]);
       setActiveProject(null);
-      toast.success("Logout out successfully");
+      toast.success("Logged out successfully");
       navigate("/login");
     } catch (err) {
       console.error("Logout failed:", err);
@@ -90,7 +91,7 @@ export function AppContextProvider({ children }) {
   };
 
   // Projects Actions
-  const loadProjects = async () => {
+  const loadProjects = useCallback(async () => {
     if (!user) return;
     try {
       const { data } = await api.get("/api/projects");
@@ -101,54 +102,57 @@ export function AppContextProvider({ children }) {
     } finally {
       setLoadingProjects(false);
     }
-  };
+  }, [user]);
 
-  const loadProject = async (id, silent = false) => {
-    if (!user) return;
-    if (!silent) setLoadingActiveProject(true);
-    try {
-      const { data } = await api.get(`/api/projects/${id}`);
-      setActiveProjects(data);
+  const loadProject = useCallback(
+    async (id, silent = false) => {
+      if (!user) return;
+      if (!silent) setLoadingActiveProject(true);
+      try {
+        const { data } = await api.get(`/api/projects/${id}`);
+        setActiveProject(data);
 
-      // Default file selection
-      const files = Objects.keys(data.files);
-      if (files.length > 0) {
-        setActiveProjects((prev) => {
-          if (files.includes(prev)) return prev;
-          if (files.includes("/App.js")) return "/App.js";
-          return files[0];
-        });
+        // Default file selection
+        const files = Object.keys(data.files);
+        if (files.length > 0) {
+          setActiveFile((prev) => {
+            if (files.includes(prev)) return prev;
+            if (files.includes("/App.js")) return "/App.js";
+            return files[0];
+          });
+        }
+      } catch (error) {
+        console.error("Failed to load project:", error);
+        if (!silent) {
+          toast.error("Failed to load project details");
+          navigate("/");
+        }
+      } finally {
+        if (!silent) setLoadingActiveProject(false);
       }
-    } catch (error) {
-      console.error("Failed to load proect: ", err);
-      if (!silent) {
-        toast.error("Failed to load project details");
-        navigate("/");
-      }
-    } finally {
-      if (!silent) setLoadingActiveProject(false);
-    }
-  };
+    },
+    [user, navigate],
+  );
 
   // Automatically poll active project status if generating or pending
   useEffect(() => {
-    if (!activeProjects?._id || !user) return;
+    if (!activeProject?._id || !user) return;
 
     const isOngoing =
-      activeProjects.status === "generating" ||
-      activeProjects.status === "pending" ||
-      activeProjects.status === "revising";
+      activeProject.status === "generating" ||
+      activeProject.status === "pending" ||
+      activeProject.status === "revising";
 
     if (isOngoing) {
       setChatLoading(true);
       const interval = setInterval(() => {
-        loadProject(activeProjects._id, true);
+        loadProject(activeProject._id, true);
       }, 2000);
       return () => clearInterval(interval);
     } else {
       setChatLoading(false);
     }
-  }, [activeProjects?._id, activeProjects?.status, loadProject, user]);
+  }, [activeProject?._id, activeProject?.status, loadProject, user]);
 
   const handleGenerate = useCallback(
     async (prompt) => {
@@ -168,15 +172,16 @@ export function AppContextProvider({ children }) {
     },
     [navigate, user],
   );
+
   const handleDelete = useCallback(
     async (id) => {
       if (!user) return;
 
       try {
-        await api.post(`/api/projects/${id}`);
+        await api.delete(`/api/projects/${id}`);
         setProjects((prev) => prev.filter((p) => p._id !== id));
       } catch (err) {
-        console.error("Failed to delete project: ", err);
+        console.error("Failed to delete project:", err);
         toast.error("Failed to delete project");
       }
     },
@@ -190,9 +195,10 @@ export function AppContextProvider({ children }) {
         loadingUser,
         login,
         register,
+        logout,
         projects,
         loadingProjects,
-        activeProjects,
+        activeProject,
         loadingActiveProject,
         chatLoading,
         generatingProject,
@@ -204,7 +210,6 @@ export function AppContextProvider({ children }) {
         loadProject,
         handleGenerate,
         handleDelete,
-        logout
       }}
     >
       {children}

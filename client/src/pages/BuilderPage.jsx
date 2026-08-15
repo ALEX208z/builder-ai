@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useAppContext } from '../context/AppContext';
-import { Loading } from "../components/Loading" 
+import Loading from "../components/Loading" 
+import BuilderHeader from '../components/BuilderHeader';
 
 const BuilderPage = () => {
 
@@ -16,7 +17,7 @@ const BuilderPage = () => {
   useEffect(() => {
     if (!id) return;
     loadProject(id)
-  }, [id, loadProject])
+  }, [id])
 
   useEffect(() => {
     if (!id || !activeProject) return;
@@ -28,6 +29,19 @@ const BuilderPage = () => {
     }
   }, [id, loadProject, activeProject])
 
+  const handleOpenPreview = () => {
+    if(!id) return;
+    window.open(`/preview/${id}` , "_blank")
+  }
+
+  const handlePublish = async () => {
+
+  }
+
+  const handleDownload = () => {
+
+  }
+
   if(loadingActiveProject || !activeProject) {
     return <Loading />
   }
@@ -35,7 +49,19 @@ const BuilderPage = () => {
   return (
     <div className="h-screen flex flex-col bg-white overflow-hidden text-zinc-900 relative">
       {/* Top Bar Header  */}
-
+        <BuilderHeader 
+        projectName={activeProject.name}
+        version={activeProject.version}
+        showCode={showCode}
+        publishing={publishing}
+        onToggleShowCode={() => setShowCode(!showCode)}
+        onOpenPreview={handleOpenPreview}
+        onPublish={handlePublish}
+        onDownload={handleDownload}
+        onBack={() => navigate("/")}
+        onLogout={logout}
+        />
+        
       {/* Main Layout */}
     </div>
   )
